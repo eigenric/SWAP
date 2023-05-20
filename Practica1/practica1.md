@@ -8,12 +8,6 @@ subtitle: "Introducción y Preparación de Herramientas."
 titlepage: true
 toc: true
 toc-own-page: true
-output:
-  pdf_document:
-    pandoc_args: [
-      "--listings"
-    ]
-    template: eisvogel
 ---
 
 # Introducción
@@ -24,17 +18,15 @@ Utilizaremos VMWare Fusion para virtualizar varias máquinas con Ubuntu 22.04 LT
 que configuraremos para ir definiendo la estructura de granja web. Descargamos
 Ubuntu 22.04 LTS con arquitectura ARM pues trabajamos desde MacOS Ventura con Apple Silicon M2.
 
-La nombramos m1-ricardoruiz. La máquina se ha instalado con una configuración de
-4GB de RAM y 20GB de disco duro. Modificamos el tamaño del disco duro a 10GB
+La nombramos m1-ricardoruiz. La máquina se ha instalado con una configuración de 4GB de RAM y 20GB de disco duro. Modificamos el tamaño del disco duro a 10GB
 mediante 
 
 - Máquina Virtual > Disco duro NVMe > Configuración de Disco Duro (NVMe).
 
-
 Iniciamos el programa y creamos una nueva máquina virtual con Inicio > Nuevo.
 Pulsamos en instalar desde disco o imagen y seleccionamos la imagen descargada.
 
-![](assets/Figura1.png)
+![](Practica1/assets/Figura1.png)
 
 
 ## Instalación de Ubuntu Server
@@ -47,20 +39,19 @@ Pulsamos en instalar desde disco o imagen y seleccionamos la imagen descargada.
    3. Usuario: ricardoruiz
    4. Contraseña: Swap1234
 
-![](assets/Figura3-2.png)
+![](Practica1/assets/Figura3-2.png)
 
 Pulsamos la opcion de instalar OpenSSH. Repetimos la misma instalación con la máquina m2-ricardoruiz.
 
 
-![](assets/Figura4.png)
+![](Practica1/assets/Figura4.png)
 
-Las direcciones IP de las máquinas son:
+Sin hacer ninguna configuración, las direcciones IP de las máquinas son:
 
 - m1-ricardoruiz: 172.16.21.132
 - m2-ricardoruiz: 172.16.21.130
 
-
-## Tareas a realizar
+# Tareas a realizar
 
 Necesitamos efectuar las siguientes tareas.
 
@@ -69,97 +60,25 @@ Necesitamos efectuar las siguientes tareas.
 3. Mostrar configuraciones de red y opciones de netplan
 4. Crear web básica (swap.html) y mostrar funcionamiento de las máquinas M1 y M2
 
+## Tarea 1. Acceder por SSH de M1 a M2
 
-En primerl ugar realizaremos una instalación de Apache + PHP + MySQL (LAMP) en ambas máquinas
+Al instalar las máquinas, ya pulsamos la opción de instalar OpenSSH en ellas.
 
+Necesitamos asegurar que ambas máquinas virtuales estén en la misma red "host-only".
 
-# Tarea1. Acceder por ssh de M1 a M2
+### Añadir y Configurar Adaptadores de Red
 
+Añadimos dos adaptadores de red en VMWare Fusion, uno de tipo **Uso compartido de Internet** que corresponde a modo NAT y otro Personalizado de tipo **Privado para mi mac** que corresponde a modo host-only.
 
-## Instalación de SSH Server y SSH Cliente B.
+![Adaptador modo NAT](Practica1/assets/Figura6.png)
 
-fdsafdsaafs
+![Adaptador host-only](Practica1/assets/Figura7.png)
 
-## Configuración Avanzada de SSH Server y SSH Cliente
-
-fdsafsdfsa
-
-### Acceso sin Contraseña
-
-fdsafdsafds
-
-### Autenticación de Clave Pública y Privada
-
-fdsafsafsa
-
-
-### Uso de Comandos Avanzados de SSH Cliente
-
-fdsafsdafsa
-
-## Configuración Básica de SSH Server y SSH Cliente
-
-fdsafdsadfsa
-
-### Cambio de Puerto
-
-fdsafdsaf
-
-### Uso de Comandos Básicos de SSH Cliente
-
-fdsafasd
-
-
-Instalamos Apache y Mysql mediante los siguientes comandos:
-
-```shell
-$ sudo apt install apache2 mysql-server mysql-client
-```
-
-Comprobamos la versión:
-```shell
-$ apache2 -v
-Server version: Apache/2.4.52 (Ubuntu)
-Server built: 2023-03-01T22:43:55
-```
-
-Y lo iniciamos mediante
-
-```shell
-$ sudo systemctl enable apache2
-$ sudo systemctl start apache2
-```
-
-Y comprobamos que los dos servicios están activos:
-
-![](assets/Figura5.png)
-
-
-### Configuración Avanzada de Apache
-
-#### Creación de Directorios Virtuales
-
-#### Redirección de Puertos
-
-
-
-# Instalación y Configuración de Servicios Apache
-
-
-# Añadir y Configurar Adaptadores de Red
-
-## Añadir Adaptadores de Red
-
-Añadimos dos adaptadores de red en VMWare Fusion, uno de tipo **Uso compartido de Internet** que corresponde a modo NAT y otro Personalizado de tipo **Privado para mi mac**.
-
-![Adaptador modo NAT](assets/Figura6.png)
-
-![Adaptador host-only](assets/Figura7.png)
-
-## Configuración de IP y Puertas de enlace
+### Configuración de IP y Puertas de enlace
 
 Abrimos el archivo de configuración de Netplan `/etc/netplan/00-installer-config.yaml` y lo editamos con la siguiente configuración:
 
+Para **M1**
 ```yaml
    network:
      version: 2
@@ -173,10 +92,25 @@ Abrimos el archivo de configuración de Netplan `/etc/netplan/00-installer-confi
            addresses: [8.8.8.8, 8.8.4.4]
        ens256:
          addresses:
-           - 10.0.0.10/24
+           - 192.168.2.10/24
 ```
 
-Así la interfaz `ens160` correspondiente al adaptador en modo NAT se configura con una dirección ip estática (`192.168.1.10/24`), una puerta de enlace (`192.168.1.1`) y servidores DNS. Por otro lado la interfaz "ens256" correspondiente al adptador en modo host-only sólo se configura con una dirección IP estática (`10.0.0.10/24`).
+Para **M2**
+```yaml
+   network:
+     version: 2
+     renderer: networkd
+     ethernets:
+       ens160:
+         addresses:
+           - 192.168.1.20/24
+         gateway4: 192.168.1.1
+         nameservers:
+           addresses: [8.8.8.8, 8.8.4.4]
+       ens256:
+         addresses:
+           - 192.168.2.20/24
+```
 
 Aplicamos la configuración de Netplan con
 
@@ -187,75 +121,140 @@ $ sudo netplan apply
 
 Y verificamos que las interfaces de red tienen la configuración correcta con `ip addr show`.
 
-## Configuración Avanzada de los Adaptadores
+De manera que
 
-fsafdsa
+- La interfaz `ens160` correspondiente al adaptador en **modo NAT** se configura con la dirección ip estática `192.168.1.10/24` en M1 y `192.168.1.20/24`en M2, la puerta de enlace (`192.168.1.1`) y servidores DNS.
 
-### Configuración de Direcciones Estáticas
+- La interfaz `ens256` correspondiente al adptador en **modo host-only** se configura con una dirección IP estática `192.168.2.10/24` en la máquina M1 y `192.168.2.20/24`en la máquina M2.
 
-fdsafdaf
+## Demostración de la tarea
 
-### Configuración de DHCP
+Podemos realizar entonces la conexión SSH, desde la M1 (máquina de origen) a M2 (la máquina destino)
 
-fdsafads
+Desde M1:
+
+```shell
+$ ssh ricardoruiz@192.168.2.20
+```
+
+![Conexion ssh de M1 a M2](Practica1/assets/Figura8.png)
+
+Análogamente, de M2 a M1:
+
+```shell
+$ ssh ricardoruiz@192.168.2.10
+```
+
+![Conexion ssh de M2 a M1](Practica1/assets/Figura9.png)
+
+
+### Acceso sin Contraseña
+
+### Autenticación de Clave Pública y Privada
+
+## Tarea 2. Acceder mediante curl de M1 a M2.
+
+Necesitamos realizar una instalación de Apache+MySQL (LAMP) para poder acceder mediante `curl`.
+
+### Instalación LAMP 
+
+```shell
+$ sudo apt install apache2 mysql-server mysql-client
+```
+
+Comprobamos la versión:
+```shell
+$ apache2 -v
+  Server version: Apache/2.4.52 (Ubuntu)
+  Server built: 2023-03-01T22:43:55
+```
+
+Y lo iniciamos mediante
+
+```shell
+$ sudo systemctl enable apache2
+$ sudo systemctl start apache2
+```
+
+Y comprobamos que los dos servicios están activos:
+
+![](Practica1/assets/Figura5.png)
+
+### Página web de ejemplo
+
+Creamos el archivo `swap.html` en M2 en `/var/www/html`.
+
+**swap.html**
+
+```html
+<HTML>
+  <BODY>
+    Web de ejemplo de "ricardoruiz" para SWAP 
+    Email: ricardoruiz@correo.ugr.es
+  </BODY>
+</HTML>
+```
+
+### Demostración de la tarea. 
+
+Tras instalar curl con `sudo apt-get install curl`, realizamos 
+
+```shell
+$ curl 192.168.2.20/swap.html
+```
+y obtenemos
+
+![](Practica1/assets/Figura10.png)
+
+```shell
+curl -o imagen.png https://www.google.es/images/srpr/logo3w.png
+```
+
+![](Practica1/assets/Figura11.png)
+
+### Uso avanzado de CURL: 
+
+#### Cookies
+#### Peticiones GET/POST
+#### Puertos
+
+## Tarea 3. Mostrar configuraciones de red y opciones de netplan
+
+En efecto, ya configuramos Netplan durante la tarea 1 para
+disponer de IPs fáciles de recordar.
+
+Netplan ofrece varias opciones avanzadas para configurar la puerta de enlace (gateway), servidores DNS y máscaras de red. 
+
+1. Configuración de la puerta de enlace (gateway):
+
+El apartado
+```routes
+  - to: 
+    via: <IP puerta de enlace>
+```
+de la configruación yaml, permite modificar la puerta de enlace (gateway)
+
+2. Configuración de servidores DNS:
+
+El apartado 
+
+```yaml
+nameservers:
+  addresses: [<DNS1>, <DNS2>]
+```
+
+de la configruación yaml, permite modificar los servidores DNS.
+
+3. Configuración de máscaras de red:
+
+La máscara de red se configura automáticamente en función de la dirección IP y la clase de red. No es necesario especificarla en la configuración de Netplan, ya que se calcula automáticamente.
+
+Una vez realizados los cambios en el archivo de configuración, se debe generar la configuración con `sudo netplan generate` y luego aplicarla mediante `sudo netplan apply`.
+
 
 ### Configuración de Máscara de Red
-
-fdsafdsa
-
-
-
 ### Configuración Básica por Defecto
-
-fsafdsa
-
-
-## Configuración Básica de Apache
-
-### Cambio de Puertos
-
-
-### Directorio WWW
-
-
-### Verificación del Estado
-
-
-
-
-# Tarea 3 Instalación y Uso de cURL
-
-
-## Instalación de cURL
-
-fdsafafds
-
-## Uso Avanzado de cURL
-
-fdsafdsafsa
-
-### Opciones Avanzadas para HTTP: Cookies, Peticiones GET/POST, Puertos
-
-fsafsdaf
-
-## Uso Básico de cURL
-
-fdsafdsaf
-
-### Opciones Básicas para HTTP: -o, -0
-
-
-fdsafdsa
-
-### Verificación del Estado de la Instalación
-
-fdsafdsaf
-
-
-fdsafdsafsd
-
 
 # Conclusiones
 
-fdsafdsa
 # Referencias

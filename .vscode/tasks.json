@@ -7,11 +7,11 @@
       "command": "pandoc",
       "args": [
         "${file}",
-        "-o",
-        "${fileDirname}/${fileBasenameNoExtension}.pdf",
         "--template",
         "eisvogel",
-        "--pdf-engine=pdflatex"
+        "--listings",
+        "-o",
+        "${fileDirname}/${fileBasenameNoExtension}.pdf"
       ],
       "group": {
         "kind": "build",
