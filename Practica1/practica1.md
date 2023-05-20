@@ -247,10 +247,6 @@ de la configruación yaml, permite modificar los servidores DNS.
 
 3. Configuración de máscaras de red:
 
-La máscara de red se configura automáticamente en función de la dirección IP y la clase de red. No es necesario especificarla en la configuración de Netplan, ya que se calcula automáticamente.
-
-Una vez realizados los cambios en el archivo de configuración, se debe generar la configuración con `sudo netplan generate` y luego aplicarla mediante `sudo netplan apply`.
-
 
 ### Configuración de Máscara de Red
 ### Configuración Básica por Defecto
