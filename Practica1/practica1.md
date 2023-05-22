@@ -235,103 +235,6 @@ curl -o imagen.png https://www.google.es/images/srpr/logo3w.png
 
 ![](Practica1/assets/Figura11.png)
 
-
-## Uso avanzado de CURL: 
-
-Curl también proporciona opciones avanzadas para trabajar con HTTP, como cookies, peticiones GET/POST personalizadas y especificación de puertos. A continuación, se muestran algunas de las opciones más comunes:
-
-### Cookies
-
-Usando la opción `b`o `cookies`
-   
-```shell
-$ curl -b "cookie1=value1; cookie2=value2" http://example.com
-```
-
-### Peticiones POST
-
-Mediante `-X` o `--request` y `d`
-
-```shell
-$ curl -X POST -d "username=admin&password=12345" http://example.com
-```
-
-### Puertos
-
-Se pueden especificar con `-p`o `--port`:
-
-```shell
-$ curl -p 8080 http://example.com
-```
-
-# Tarea 3. Mostrar configuraciones de red y opciones de netplan
-
-En efecto, ya configuramos Netplan durante la tarea 1 para
-disponer de IPs fáciles de recordar.
-
-Netplan ofrece varias opciones avanzadas para configurar la puerta de enlace (gateway), servidores DNS y máscaras de red. 
-
-## Configuración de la puerta de enlace (gateway):
-
-El apartado
-```routes
-  - to: 
-    via: <IP puerta de enlace>
-```
-de la configruación yaml, permite modificar la puerta de enlace (gateway)
-
-## Configuración de servidores DNS:
-
-El apartado 
-
-```yaml
-nameservers:
-  addresses: [<DNS1>, <DNS2>]
-```
-
-de la configruación yaml, permite modificar los servidores DNS.
-
-## Configuración de máscaras de red:
-
-El apartado
-
-```yaml
-[...]
-  addresses:
-      - <IP>/<prefijo de red>
-
-```
-
-permite modificar la máscara de red. El prefijo de red indica el número de bits y define el tamaño de la red. En nuestro caso, hemos utilizado una máscara de red de 24 bits.
-
-
-# Tarea 4. Página web de ejemplo
-
-## Creación del archivo en el servidor apache de M2
-
-Creamos el archivo `swap.html` en M2 en `/var/www/html`.
-
-**swap.html**
-
-```html
-<HTML>
-  <BODY>
-    Web de ejemplo de "ricardoruiz" para SWAP 
-    Email: ricardoruiz@correo.ugr.es
-  </BODY>
-</HTML>
-```
-
-## Acceso mediante curl desde M1
-
-```shell
-$ curl 192.168.2.20/swap.html
-```
-
-obteniendo
-
-![](Practica1/assets/Figura10.png)
-
 ## Uso avanzado de Apache
 
 ### Directorios virtuales 
@@ -423,6 +326,101 @@ De manera que podemos acceder a nuestro directorio virtual del puerto 8000 desde
 
 ![Redireccionamiento de puertos](Practica1/assets/Figura17.png)
 
+## Uso avanzado de CURL: 
+
+Curl también proporciona opciones avanzadas para trabajar con HTTP, como cookies, peticiones GET/POST personalizadas y especificación de puertos. A continuación, se muestran algunas de las opciones más comunes:
+
+### Cookies
+
+Usando la opción `b`o `cookies`
+   
+```shell
+$ curl -b "cookie1=value1; cookie2=value2" http://example.com
+```
+
+### Peticiones POST
+
+Mediante `-X` o `--request` y `d`
+
+```shell
+$ curl -X POST -d "username=admin&password=12345" http://example.com
+```
+
+### Puertos
+
+Se puede acceder mediante el formato de url `http://example.com:<puerto`.
+
+```shell
+$ curl http://example.com:8000
+```
+
+# Tarea 3. Mostrar configuraciones de red y opciones de netplan
+
+En efecto, ya configuramos Netplan durante la tarea 1 para
+disponer de IPs fáciles de recordar.
+
+Netplan ofrece varias opciones avanzadas para configurar la puerta de enlace (gateway), servidores DNS y máscaras de red. 
+
+## Configuración de la puerta de enlace (gateway):
+
+El apartado
+```routes
+  - to: 
+    via: <IP puerta de enlace>
+```
+de la configruación yaml, permite modificar la puerta de enlace (gateway)
+
+## Configuración de servidores DNS:
+
+El apartado 
+
+```yaml
+nameservers:
+  addresses: [<DNS1>, <DNS2>]
+```
+
+de la configruación yaml, permite modificar los servidores DNS.
+
+## Configuración de máscaras de red:
+
+El apartado
+
+```yaml
+[...]
+  addresses:
+      - <IP>/<prefijo de red>
+
+```
+
+permite modificar la máscara de red. El prefijo de red indica el número de bits y define el tamaño de la red. En nuestro caso, hemos utilizado una máscara de red de 24 bits.
+
+
+# Tarea 4. Página web de ejemplo
+
+## Creación del archivo en el servidor apache de M2
+
+Creamos el archivo `swap.html` en M2 en `/var/www/html`.
+
+**swap.html**
+
+```html
+<HTML>
+  <BODY>
+    Web de ejemplo de "ricardoruiz" para SWAP 
+    Email: ricardoruiz@correo.ugr.es
+  </BODY>
+</HTML>
+```
+
+## Acceso mediante curl desde M1
+
+```shell
+$ curl 192.168.2.20/swap.html
+```
+
+obteniendo
+
+![](Practica1/assets/Figura10.png)
 
 
 # Bibliografía
