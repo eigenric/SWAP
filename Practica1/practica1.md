@@ -6,11 +6,18 @@ subject: "Servidores Web de Altas Prestaciones"
 keywords: ["Apache", "Ubuntu Server"]
 subtitle: "Introducción y Preparación de Herramientas."
 titlepage: true
+titlepage-background: "Practica1/background1.pdf"
 toc: true
 toc-own-page: true
+# titlepage-color: "3C9F53"
+# titlepage-text-color: "FFFFFF"
+# titlepage-rule-color: "FFFFFF"
+# titlepage-rule-height: 2
 ---
 
 # Introducción
+
+
 
 ## Software de Virtualización
 
@@ -150,7 +157,38 @@ $ ssh ricardoruiz@192.168.2.10
 
 ### Acceso sin Contraseña
 
-### Autenticación de Clave Pública y Privada
+En la anterior demostración, se nos pide la contraseña de usuario para acceder a la máquina destino. Para evitar esto, podemos configurar la autenticación mediante clave pública y privada.
+
+#### Generar claves pública y privada
+
+1. En M1, generamos un par de clavesun pública y privada utilizando el comando `ssh-keygen`. 
+
+```shell
+ricardoruiz@m1-ricardoruiz $ ssh-keygen
+```
+
+![Clave Pública y privada](Practica1/assets/Figura13.png)
+
+2. Copiamos la clave pública generada (generalmente se encuentra en el archivo `~/.ssh/id_rsa.pub` o `~/.ssh/id_dsa.pub`) al archivo `authorized_keys` en la máquina remota. Para ello, podemos utilizar el comando `scp`
+
+```shell
+ricardoruiz@m1-ricardoruiz $ scp .ssh/id_rsa.pub ricardoruiz@192.168.2.20:/home/ricardo/.ssh
+```
+
+![Enviar clave publica](Practica1/assets/Figura14.png)
+
+Que debe tener permisos de lectura y escritura:
+
+```shell
+ricardoruiz@m2-ricardoruiz $ mv .ssh/id_rsa.pub .ssh/authorized_keys
+ricardoruiz@m2-ricardoruiz $ chmod 600 .ssh/authorized_keys
+```
+
+### Demostración acceso sin contraseña
+
+En efecto, ahora ya no es necesario incluir la contraseña cuando realizamos la conexión:
+
+![Conexion ssh de M1 a M2 sin contraseña](Practica1/assets/Figura15.png)
 
 # Tarea 2. Acceder mediante curl de M1 a M2.
 
@@ -197,40 +235,6 @@ curl -o imagen.png https://www.google.es/images/srpr/logo3w.png
 
 ![](Practica1/assets/Figura11.png)
 
-## Uso avanzado de Apache
-
-### Directorios virtuales 
-  
-Para crear un directorio virtual en Apache, utiliza la directiva `Alias` en el archivo de configuración de Apache (`/etc/apache2/apache2.conf` o archivos en `/etc/apache2/sites-available/`). Aquí tienes un ejemplo resumido:
-
-```
-Alias /virtual /var/html
-<Directory /var/html>
-    Options Indexes FollowSymLinks
-    AllowOverride All
-    Require all granted
-</Directory>
-```
-
-
-
-2. Redireccionar puertos:
-   Para redireccionar puertos en Apache, puedes utilizar la directiva `ProxyPass` en el archivo de configuración. Aquí tienes un ejemplo resumido:
-
-   ```
-   ProxyPass / http://localhost:80/
-   ProxyPassReverse / http://localhost:80/
-   ```
-
-   Esto redireccionará todas las solicitudes recibidas a través del puerto 8080 a `http://localhost:80/`. Puedes ajustar los puertos y la URL según tus requerimientos.
-
-Recuerda reiniciar el servicio de Apache después de realizar cambios en la configuración con el siguiente comando:
-
-```shell
-sudo systemctl restart apache2
-```
-
-Estos son ejemplos básicos de configuraciones en Apache para crear directorios virtuales y redirigir puertos en Ubuntu Server 22.04. Ten en cuenta que la configuración específica puede variar dependiendo de tu caso de uso y los archivos de configuración presentes en tu sistema. Consulta la documentación oficial de Apache y los recursos específicos de Ubuntu para obtener más detalles y opciones avanzadas.
 
 ## Uso avanzado de CURL: 
 
@@ -298,8 +302,7 @@ El apartado
 
 ```
 
-permite modificar la máscara de red. El prefijo de red indica el número de bits y define el tamaño de la red
-En nuestro caso, hemos utilizado una máscara de red de 24 bits.
+permite modificar la máscara de red. El prefijo de red indica el número de bits y define el tamaño de la red. En nuestro caso, hemos utilizado una máscara de red de 24 bits.
 
 
 # Tarea 4. Página web de ejemplo
@@ -329,23 +332,110 @@ obteniendo
 
 ![](Practica1/assets/Figura10.png)
 
+## Uso avanzado de Apache
+
+### Directorios virtuales 
+  
+Para crear directorios virtuales en Apache, creamos archivos `.conf` en `/etc/apache2/sites-availables` y realizamos un enlace simbolico a estos archivos en `/etc/apache2/sites-enabled`.
+
+Crearemos dos directorios virtuales, uno en el puerto 80 que apuntará al directorio `/var/www/html` y otro en el puerto 8000 que apuntará al directorio `/var/www/virtual`. Este tendrá un archivo `index.html` que indique que accedemos al directorio virtual.
+
+`index.html`
+
+```html
+<HTML>
+  <BODY>
+    Directorio virtual de "ricardoruiz" para SWAP 
+    Email: ricardoruiz@correo.ugr.es
+  </BODY>
+</HTML>
+```
+
+`default-html.conf`
+
+```ApacheConf
+<VirtualHost *:80>
+    ServerName 192.168.2.20
+    DocumentRoot /var/www/html
+
+    <Directory /var/www/html>
+        Options Indexes FollowSymLinks
+        AllowOverride All
+        Require all granted
+    </Directory>
+</VirtualHost>
+```
+
+`virtual.conf`
+
+```ApacheConf
+<VirtualHost *:8000>
+    ServerName 192.168.2.20
+    DocumentRoot /var/www/virtual
+
+    <Directory /var/www/virtual>
+        Options Indexes FollowSymLinks
+        AllowOverride All
+        Require all granted 
+    </Directory>
+</VirtualHost>
+```
+
+Enlazamos los archivos `.conf` en `/etc/apache2/sites-enabled`:
+
+```shell
+$ sudo ln -s /etc/apache2/sites-available/default-html.conf /etc/apache2/sites-enabled/default-html.conf
+$ sudo ln -s /etc/apache2/sites-available/virtual.conf /etc/apache2/sites-enabled/virtual.conf
+```
+
+Necesitamos escuchar el puerto 8000, por lo que modificamos el archivo `/etc/apache2/ports.conf`, añadiendo `Listen 8000`
+
+Y reiniciamos el servidor de Apache:
+
+```shell 
+$ sudo systemctl restart apache2
+```
+
+Podemos comprobar accediendo con curl:
+
+![](Practica1/assets/Figura16.png)
+
+### Redireccionar puertos
+
+Para redireccionar puertos en Apache, se utilizan las directivas `ProxyPass` y `ProxyPassReverse`. Haremos una redireccion del puerto 80 al 8000. Para ello añadimos el apartado VirtualHost en `default-html.conf` lo siguiente:
+
+```ApacheConf
+[...]
+ProxyPass /virtual http://192.168.2.20:8000/
+ProxyPassReverse /virtual http://192.168.2.20:8000/
+</VirtualHost>
+```
+
+Activamo el módulo de proxy de Apache y reiniciamos el servidor:
+
+```shell
+$ sudo a2enmod proxy
+$ sudo a2enmod proxy_http
+$ sudo systemctl restart apache2
+```
+
+De manera que podemos acceder a nuestro directorio virtual del puerto 8000 desde el puerto 80:
+
+![Redireccionamiento de puertos](Practica1/assets/Figura17.png)
+
+
 
 # Bibliografía
 
-1. **VMware Fusion**
-   - Sitio web: [VMware Fusion](https://www.vmware.com/products/fusion.html)
 
-2. **Ubuntu Server**
-   - Sitio web: [Ubuntu Server Documentation](https://ubuntu.com/server/docs)
+- **VMware Fusion**. (s.f.). Recuperado de [https://www.vmware.com/products/fusion.html](https://www.vmware.com/products/fusion.html)
 
-3. **Netplan**
-   - Sitio web: [Netplan](https://netplan.io/)
-   - Ejemplos de configuración: [Netplan Examples](https://netplan.io/examples)
+- **Ubuntu**. (s.f.). Ubuntu Server Documentation. Recuperado de [https://ubuntu.com/server/docs](https://ubuntu.com/server/docs)
 
-4. **Apache HTTP Server**
-   - Sitio web: [Apache HTTP Server Documentation](https://httpd.apache.org/docs/)
-   - Guía de configuración de Apache: [Apache HTTP Server Configuration](https://httpd.apache.org/docs/2.4/configuring.html)
+- **Netplan**. (s.f.). Recuperado de [https://netplan.io/](https://netplan.io/)
+   - Ejemplos de configuración: Netplan. (s.f.). Recuperado de [https://netplan.io/examples](https://netplan.io/examples)
+- **Apache**. (s.f.). Apache HTTP Server Documentation. Recuperado de [https://httpd.apache.org/docs/](https://httpd.apache.org/docs/)
+   - Guía de configuración de Apache: Apache. (s.f.). Apache HTTP Server Configuration.
 
-5. **cURL**
-   - Sitio web: [cURL Documentation](https://curl.se/docs/)
-   - Comandos y opciones de cURL: [cURL Manual](https://curl.se/docs/manpage.html)
+- **cURL**. (s.f.). Recuperado de [https://curl.se/docs/](https://curl.se/docs/)
+   - Comandos y opciones de cURL: cURL. (s.f.). cURL Manual. Recuperado de [https://curl.se/docs/manpage.html](https://curl.se/docs/manpage.html)

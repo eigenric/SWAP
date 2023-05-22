@@ -9,6 +9,8 @@
         "${file}",
         "--template",
         "eisvogel",
+        "-V",
+        "lang=es",
         "--listings",
         "-o",
         "${fileDirname}/${fileBasenameNoExtension}.pdf"
