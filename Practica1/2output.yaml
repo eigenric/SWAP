@@ -16,11 +16,3 @@ output:
       "--listings"
     ]
     template: eisvogel
-
-
-output:
-  pdf_document:
-    pandoc_args: [
-      "--listings"
-    ]
-    template: eisvogel
