@@ -6,7 +6,7 @@ subject: "Servidores Web de Altas Prestaciones"
 keywords: ["Apache", "Ubuntu Server"]
 subtitle: "Clonar la información de un Sitio Web."
 titlepage: true
-titlepage-background: "Practica1/background1.pdf"
+titlepage-background: "Practica2/background1.pdf"
 toc: true
 toc-own-page: true
 # titlepage-color: "3C9F53"
@@ -32,7 +32,7 @@ Realizaremos las siguientes tareas básicas:
 
 Supongamos que no tenemos suficiente espacio en disco local para crear un archivo tar.gz. Podemos crearlo directamente en el equipo remoto mediante SSH.:
 
-```
+```shell
 ricardoruiz@m1-ricardoruiz $ tar -czf - copia_local/ | ssh ricardoruiz@192.167.2.20 'cat > ~/archivo.tgz'
 ``` 
 
@@ -60,19 +60,25 @@ O enviar el propio directorio sin comprimir:
 $ scp -r copia_local ricardoruiz@m2-ricardoruiz:~/copia_local
 ```
 
-![Copia del direcotorio mediante SCP](Practica3/assets/Figura3.png)
+![Copia del direcotorio mediante SCP](Practica2/assets/Figura3.png)
+
 
 # Tarea 2. Clonar contenido entre máquinas
 
 Para directorios de mayor tamaño, es mejor utiliza rsync. La herramienta rsync es una opción útil para realizar copias y sincronización de archivos. Lo instalamos:
 
+
 ```shell
 ricardoruiz@m2-ricardoruiz $ sudo apt-get install rsync
 ```
 
+\newpage 
+
 Queremos clonar la carpeta que contiene el servidor web principal desde la máquina secundario. 
 Creamos un archivo `m1.html` en `/var/www/html` para distinguir el servidor principal.
+
 Es necesario que el usuario sea propietario de la carpeta que queremos sincronizar. 
+
 
 ```shell
 ricardoruiz@m2-ricardoruiz $ sudo chown ricardoruiz:ricardoruiz -R /var/www
@@ -82,13 +88,15 @@ Rsync nos pedirá la clave de usuario en M1 y comprobamos que se actualiza el co
 
 ![Rsync](Practica2/assets/Figura4.png)
 
-##  Rsynz Avanzado
+##  Configuraciones avanzadas de Rsync 
 
 Podemos especificar qué directorios ignorar durante el proceso de copia. Por ejemplo, si queremos realiza rcopia de `/var/www`pero excluir los directorio `/var/www/error`, `/var/www/stats` y `/var/www/files/pictures` usamos `--exclude`.
 
-En primer lugar, creamos la estructura de directorios en el servidor secundario, con los archivos `error.html`, `stats.html` y añadimos `img.jpg`a `/var/www/files/pictures`.
+En primer lugar, creamos la estructura de directorios en el servidor secundario, con los archivos `error.html`, `stats.html` y añadimos `img.jpg` a `/var/www/files/pictures`.
 
 ![Estructura de directorios](Practica2/assets/Figura5.png)
+
+\newpage
 
 ```shell
 ricardoruiz@m2-ricardoruiz $ rsync /var/www/ -avz --delete --exclude=**/stats --exclude=**/error --exclude=**/files/pictures -e ssh 192.168.2.10:/var/www
@@ -118,15 +126,18 @@ De forma parecida como se hicimos en la configuración avanzada de la primer pr�
 ricardoruiz@m2-ricardoruiz $ ssh-keygen -b 4096 -t rsa
 ```
 
-Esto generará, por defecto, el fichero `~/.ssh/id_rsa` para la clave privada y el ficher `~/.ssh/id_rsa.pub` para la clave pública. Este formato es válido para el protocolo 2 de SSH. Debemos copiar la clave pública al equipo remoto (máquina principal) en `~/.ssh/authorized_key` con permisos 600.
+Esto generará, por defecto, el fichero `~/.ssh/id_rsa` para la clave privada y el ficher `~/.ssh/id_rsa.pub` para la clave pública. 
+
+Este formato es válido para el protocolo 2 de SSH. Debemos copiar la clave pública al equipo remoto (máquina principal) en `~/.ssh/authorized_key` con permisos 60-s0.
 
 Podemos realizarlo de forma sencilla utilizando el comando `ssh-copy-id`.
 
 ```shell
-ricardoruiz@m2-ricardoruiz $ ssh-copy-id 192.168.1.20
+ricardoruiz@m2-ricardoruiz $ ssh-copy-id 192.168.2.10
 ```
 
-Finalmente, podemos destacar la manera de ejecuta comandos en el equipo remoto, esta vez sin solicitud de contraseña.
+Finalmente, podemos destacar la manera de ejecuta comandos en el equipo remoto,
+esta vez sin solicitud de contraseña.
 
 ```shell
 ricardoruiz@m2-ricardoruiz $ ssh 192.168.1.20 uname -a
@@ -136,42 +147,58 @@ ricardoruiz@m2-ricardoruiz $ ssh 192.168.1.20 uname -a
 
 Podemos ahora automatizar la sincronización de directorios con rsync utilizando cron.
 
-# Tarea 4. Establecer una tarea con cron
+\newpage
 
-Cron es un administrador de procesos en segundo plano que ejecuta tareas programadas en momentos específicos. Está configurado mediante el archivo `/etc/crontab`, que contiene las tareas a ejecutar junto con su frecuencia y el usuario que las ejecuta.
+# Tarea 4. Establecer una tarea con Cron
 
-El formato de las tareas es el siguiente:
+Cron es un administrador de procesos en segundo plano que ejecuta tareas
+programadas en momentos específicos. Está configurado mediante el archivo
+`/etc/crontab`, que contiene las tareas a ejecutar junto con su frecuencia y el usuario que las ejecuta.
+
+Las tareas se definen utilizando siete campos en cada línea del archivo crontab, que representan el minuto, hora, día del mes, mes, día de la semana, usuario y comando a ejecutar. 
+
+Un asterisco representa la tarea se ejecutará en cada valor válido en esos campos.
+
+Como ejemplo, la siguiente tarea apagará el ordenador cada día a las 00:30h:
 
 ```
-# Comentario descriptivo de la tarea
-# ┌───────────── minuto (0 - 59)
-# │ ┌───────────── hora (0 - 23)
-# │ │ ┌───────────── día del mes (1 - 31)
-# │ │ │ ┌───────────── mes (1 - 12)
-# │ │ │ │ ┌───────────── día de la semana (0 - 7) (Domingo = 0 o 7)
-# │ │ │ │ │ ┌───────────── usuario
-# │ │ │ │ │ │   ┌───────────── comando a ejecutar
-# │ │ │ │ │ │   │
-# │ │ │ │ │ │   │
-# │ │ │ │ │ │   │
-# │ │ │ │ │ │   │
-# * * * * * usuario comando`
-```
-
-Por defecto * indica todo.
-
-## Ejemplos
-
-```crontab
 30 0 * * * root /sbin/shutdown -h now
 ```
-Para apagar el ordenador cada día a las 00:30h.
+
+## Utilizar Cron para automatizar Rsync
+
+Creamos la siguiente tarae de cron `crontab -e`
 
 ```
-30 15 * * 4 root rm /tmp/*
-*/3 * * * * root rm /tmp/*
+0 * * * * rsync /var/www/ -avz --exclude=**/stats --exclude=**/error --exclude=**/files/pictures -e ssh 192.168.2.10:/var/www
 ```
-Para eliminar todos loa rchivos de /tmp todos los jueves a las 15:30h (primera tarea) o cada tres minutos (segunda tarea)
 
-Puedes usar crontab –e para editar una tarea contrab en lugar de editar el archivo /etc/crontab
+La línea  `0 * * * *` indica que la tarea se ejecutará en el minuto 0 de cada hora todos los días.
 
+## Demostración
+
+Los estados de las carpetas `/var/www` de las máquinas M2 y M1 respectivamente aproximadamente a las 11:48 / 11:49 son:
+
+![Estado /var/www en M1](Practica2/assets/Figura11.png)
+
+![Estado /var/www en M2](Practica2/assets/Figura12.png)
+
+Configuramos la tarea de Crontab para que se ejecute cada hora:
+
+![Tarea crontab en M2](Practica2/assets/Figura13.png)]
+
+Esperamos a las 12:00 y comprobamos que se ha sincronizado en M1:
+
+![Sincronización automática](Practica2/assets/Figura14.png)
+
+\newpage
+
+# Referencias
+
+Aquí tienes la lista de referencias en el formato solicitado:
+
+- **OpenSSH.** Recuperado de [https://www.openssh.com/](https://www.openssh.com/)
+- **SCP (Secure Copy).**  Recuperado de [https://man.openbsd.org/scp](https://man.openbsd.org/scp)
+- **Rsync**. Recuperado de [https://rsync.samba.org/](https://rsync.samba.org/)
+- **SSH Keygen**. Recuperado de [https://man.openbsd.org/ssh-keygen](https://man.openbsd.org/ssh-keygen)
+- **Cron.** Recuperado de [https://man7.org/linux/man-pages/man8/cron.8.html](https://man7.org/linux/man-pages/man8/cron.8.html)

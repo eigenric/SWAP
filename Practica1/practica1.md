@@ -423,17 +423,17 @@ obteniendo
 ![](Practica1/assets/Figura10.png)
 
 
-# Bibliografía
+# Referencias
 
 
-- **VMware Fusion**. (s.f.). Recuperado de [https://www.vmware.com/products/fusion.html](https://www.vmware.com/products/fusion.html)
+- **VMware Fusion**. Recuperado de [https://www.vmware.com/products/fusion.html](https://www.vmware.com/products/fusion.html)
 
-- **Ubuntu**. (s.f.). Ubuntu Server Documentation. Recuperado de [https://ubuntu.com/server/docs](https://ubuntu.com/server/docs)
+- **Ubuntu**. Ubuntu Server Documentation. Recuperado de [https://ubuntu.com/server/docs](https://ubuntu.com/server/docs)
 
-- **Netplan**. (s.f.). Recuperado de [https://netplan.io/](https://netplan.io/)
+- **Netplan**. Recuperado de [https://netplan.io/](https://netplan.io/)
    - Ejemplos de configuración: Netplan. (s.f.). Recuperado de [https://netplan.io/examples](https://netplan.io/examples)
-- **Apache**. (s.f.). Apache HTTP Server Documentation. Recuperado de [https://httpd.apache.org/docs/](https://httpd.apache.org/docs/)
+- **Apache**. Apache HTTP Server Documentation. Recuperado de [https://httpd.apache.org/docs/](https://httpd.apache.org/docs/)
    - Guía de configuración de Apache: Apache. (s.f.). Apache HTTP Server Configuration.
 
-- **cURL**. (s.f.). Recuperado de [https://curl.se/docs/](https://curl.se/docs/)
+- **cURL**. Recuperado de [https://curl.se/docs/](https://curl.se/docs/)
    - Comandos y opciones de cURL: cURL. (s.f.). cURL Manual. Recuperado de [https://curl.se/docs/manpage.html](https://curl.se/docs/manpage.html)
