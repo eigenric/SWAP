@@ -361,7 +361,7 @@ disponer de IPs fáciles de recordar.
 
 Netplan ofrece varias opciones avanzadas para configurar la puerta de enlace (gateway), servidores DNS y máscaras de red. 
 
-## Configuración de la puerta de enlace (gateway):
+# Configuración de la puerta de enlace (gateway):
 
 El apartado
 ```routes

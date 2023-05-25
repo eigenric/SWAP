@@ -69,20 +69,20 @@ Debemos deshabilitar la configuración por defecto de nginx como servidor web pa
 
 Para ello, comentamos la línea 
 
-```conf
+```
 #include /etc/nginx/sites-enabled/*;
 ```
 
 del fichero de configuración `/etc/nginx/nginx.conf`.
 
-Creamos una nueva configuración en `/etc/nginx/conf.d/default.conf`:
+Creamos una nueva configuración en `/etc/nginx/conf.d/default.conf` 
 
 
 Para definir la granja web de servidores apache escribimos la sección upstream con la IP de las M1 y M2. Es importante que este al principio del archivo de configuración, fuera de la sección server.
 
 \newpage
 
-```conf
+```
 upstream balanceo_ricardoruiz { 
     server 192.168.2.10;
     server 192.168.2.20;
@@ -115,6 +115,32 @@ server {
 Luego la configuración completa quedaría como sigue:
 
 ![](Practica3/assets/Figura3.png)
+
+Configuramos la IP de la máquina m3-ricardoruiz como IP estática en el fichero `/etc/netplan/00-installer-config.yaml`:
+
+```yaml
+   network:
+     version: 2
+     renderer: networkd
+     ethernets:
+       ens160:
+         dhcp4: true
+         addresses:
+           - 192.168.1.20/24
+         routes:
+            - to: 0.0.0.0/0
+              via: 192.168.1.1
+              metric: 100
+         nameservers:
+           addresses: [8.8.8.8, 8.8.4.4]
+       ens256:
+         dhpc4: false
+         addresses:
+           - 192.168.1.30/24
+```
+
+TODO: Añadir adaptador de red Host-Only.
+
 
 # Tarea 2. Alta carga con Apache Benchmark
 
