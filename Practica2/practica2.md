@@ -3,7 +3,7 @@ title: "Servidores Web de Altas Prestaciones. Práctica 2"
 author: ["Ricardo Ruiz Fernández de Alba"]
 date: "22/05/2023"
 subject: "Servidores Web de Altas Prestaciones"
-keywords: ["Apache", "Ubuntu Server"]
+keywords: ["SSH", "SCP", "Claves público-privada", "Rsync", "Tareas cron"]
 subtitle: "Clonar la información de un Sitio Web."
 titlepage: true
 titlepage-background: "Practica2/background1.pdf"
