@@ -61,6 +61,60 @@ Antes de probar Nginx, es necesario configurar el firewall para permitir el acce
 ricardoruiz@m3-ricardoruiz $ sudo ufw allow 'Nginx HTTP
 ```
 
+Comprobamos que nginx está activo con `sudo systemctl status nginx`:
+
+![Nginx](Practica3/assets/Figura2.png)
+
+Debemos deshabilitar la configuración por defecto de nginx como servidor web para que actúe como balanceador.
+
+Para ello, comentamos la línea 
+
+```conf
+#include /etc/nginx/sites-enabled/*;
+```
+
+del fichero de configuración `/etc/nginx/nginx.conf`.
+
+Creamos una nueva configuración en `/etc/nginx/conf.d/default.conf`:
+
+
+Para definir la granja web de servidores apache escribimos la sección upstream con la IP de las M1 y M2. Es importante que este al principio del archivo de configuración, fuera de la sección server.
+
+\newpage
+
+```conf
+upstream balanceo_ricardoruiz { 
+    server 192.168.2.10;
+    server 192.168.2.20;
+}
+```
+
+Debemos definir ahora la sección server para indicar a nginx que use el grupo definido anteriormente en upstream.
+Para que el proxy_pass funcione correctamente , debemos indicar una conexión de tipo HTTP 1.1 asi como eliminar la cabecera `Connection` para evitar que se pase al servidor final la cabecer que indica el usuario.
+
+
+```conf
+[..]
+server {
+    listen 80;
+    server_name balanceador_ricardoruiz;
+    access_log /var/log/nginx/balanceador_ricardoruiz.access.log; 
+    error_log /var/log/nginx/balanceador_ricardoruiz.error.log; 
+    root /var/www/;
+    location / {
+        proxy_pass http://balanceo_ricardoruiz;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for; 
+        proxy_http_version 1.1;
+        proxy_set_header Connection "";
+    }
+}
+```
+
+Luego la configuración completa quedaría como sigue:
+
+![](Practica3/assets/Figura3.png)
 
 # Tarea 2. Alta carga con Apache Benchmark
 
