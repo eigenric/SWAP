@@ -126,42 +126,18 @@ Luego la configuración completa quedaría como sigue:
 
 ![](Practica3/assets/Figura3.png)
 
+\newpage
+
 ### Ejemplo de funcionamiento
 
-Configuramos la IP de la máquina m3-ricardoruiz como IP estática en el fichero `/etc/netplan/00-installer-config.yaml`, añadiendo un nuevo adaptador de red Host-Only.
-
-```yaml
-   network:
-     version: 2
-     renderer: networkd
-     ethernets:
-       ens160:
-         dhcp4: true
-         addresses:
-           - 192.168.1.30/24
-         routes:
-            - to: 0.0.0.0/0
-              via: 192.168.1.1
-              metric: 100
-         nameservers:
-           addresses: [8.8.8.8, 8.8.4.4]
-       ens256:
-         dhpc4: false
-         addresses:
-           - 192.168.2.30/24
-```
-
-La IP accesible desde fuera a M3 es `172.16.21.133`. 
+La IP accesible desde el Sistema Operativo a M3 es `172.16.21.133`. 
 
 Podemos comprobar el funcionamiento del balanceador con 
-
-```shell
-ricardoruiz@m3-ricardoruiz $ curl 172.16.21.133/swap.html
-```
+`curl 172.16.21.133/swap.html`
 
 ![](Practica3/assets/Figura4.png)
 
-### Repartir carga en función de pesos
+### Tarea avanzada: repartir carga en función de pesos
 
 En caso de saber que alguna de las máquinas finales es más potente, podemos modificar la definición del “upstream” para pasarle más tráfico que al resto. Para ello, asignamos un valor numero al modificador "weight".
 
@@ -190,6 +166,71 @@ Realizamos tres peticiones y comprobamos que se sigue el **Algoritmo Round Robin
 
 ## Balanceo de carga con HAProxy
 
+HAProxy es un software de balanceo de carga y proxy inverso de alta disponibilidad que se utiliza para distribuir el tráfico de red a varios servidores backend y mejorar la escalabilidad y la fiabilidad de las aplicaciones web.
+
+### Instalación de HAProxy
+
+Instalamos HAProxy con `sudo apt install haproxy`.
+
+
+### Configuración básica de haproxy como balanceador
+
+La configuración de HAProxy se encuentra en el fichero `/etc/haproxy/haproxy.cfg`.  Debemos modificarlo para indicarle cuales son nuestros servidores (backend) y qué peticiones balancear.
+
+La siguiente configuración hace que HAProxy escuche en el puerto 80 y redirige el tráfico a las máquinas M1 y M2.
+
+```cfg
+frontend http-in
+  bind *:80
+  default_backend balanceo_ricardoruiz
+
+backend balanceo_ricardoruiz
+  balance roundrobin
+  server m1 192.168.2.10:80 maxconn 32 
+  server m2 192.168.2.20:80 maxconn 32
+```
+
+![](Practica3/assets/Figura9.png)
+
+\newpage
+
+### Ejemplo de funcionamiento
+
+En primer lugar, debemos desactivar el servicio de NGINX para que no haya conflictos con el puerto 80.
+
+```shell
+ricardoruiz@m3-ricardoruiz $ sudo systemctl stop nginx
+```
+
+Y lanzamos HAProxy con 
+
+```shell
+ricardoruiz@m3-ricardoruiz $ sudo haproxy -f /etc/haproxy/haproxy.cfg
+ricardoruiz@m3-ricardoruiz $ sudo service haproxy restart
+```
+
+En efecto, comprobamos que se balancea el tráfico entre M1 y M2 siguiento el algoritmo Round Robin:
+
+![](Practica3/assets/Figura10.png)
+
+### Tarea Avanzada: repartir carga en función de pesos
+
+Para configurar HAProxy para que distribuya la carga de manera que M1 reciba el doble de peticiones que M2, debemos modificar el fichero de configuración de HAProxy para que quede como sigue:
+
+```cfg
+frontend http-in
+  bind *:80
+  default_backend balanceo_ricardoruiz
+  
+backend balanceo_ricardoruiz
+  server m1 192.168.2.10:80 weight 2 maxconn 32 
+  server m2 192.168.2.20:80 weight 1 maxconn 32
+```
+
+Relanzamos HAProxy como se hizo anteriormente y 
+realizamos tres peticiones, comprobando que se sigue el **Algoritmo Round Robin** acabando dos de ellas en M1:
+
+s
 
 # Tarea 2. Alta carga con Apache Benchmark
 
