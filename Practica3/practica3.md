@@ -20,7 +20,7 @@ toc-own-page: true
 En esta práctica, el objetivo es configurar las máquinas virtuales de forma que dos hagan de servidores web finales mientras que la tercera haga de balanceador de carga por
 software. 
 
-# Tareas
+# Descripción de las tareas
 
 En esta práctica se llevarán a cabo las **tareas básicas**:
 
@@ -32,21 +32,30 @@ En esta práctica se llevarán a cabo las **tareas básicas**:
 
 
 Como **opciones avanzadas**:
-1. Configurar nginx y haproxy como balanceadores de carga con
-ponderación, suponiendo que M1 tiene el doble de capacidad que M2.
-2. Habilitar el módulo de estadísticas en HAproxy con varias opciones y analizarlo
-3. Instalar y configurar otros balanceadores de carga (Gobetween, Zevenet, Pound, etc.)
+
+
+1. Configurar nginx y haproxy como balanceadores de carga con ponderación, suponiendo que M1 tiene el doble de capacidad que M2.
+
+2. Habilitar el módulo de estadísticas en HAproxy con varias opciones y analizarlo.
+
+3. Instalar y configurar otros balanceadores de carga (Gobetween, Zevenet, Pound, etc.).
+
 4. Someter la granja web a una alta carga con la herramienta Apache Benchmark considerando los distintos balanceadores instalados y configurados.
+
 5. Realizar un análisis comparativo de los resultados considerando el número de peticiones por unidad de tiempo
 
-# Tarea 1. Balanceador de carga
+\newpage
+
+# Tarea 1. Balanceo de carga con NGINX y HAProxy.
 
 Creamos una nueva máquina virtual llamada m3-ricardoruiz con Ubuntu Server 22.04 LTS, a la que añadiremos el usuario
 ricardoruiz con contraseña Swap12324.
 
 ![](Practica3/assets/Figura1.png)
 
-## Instalación de nginx
+## Balanceo de carga con NGINX
+
+### Instalación de NGINX.
 
 Seguiremos la guia de instalación de nginx para Ubuntu Server 22.04 de[Digital Ocean](https://www.digitalocean.com/community/tutorials/how-to-install-nginx-on-ubuntu-22-04).
 
@@ -65,6 +74,8 @@ Comprobamos que nginx está activo con `sudo systemctl status nginx`:
 
 ![Nginx](Practica3/assets/Figura2.png)
 
+### Configuración de NGINX como balanceador de carga
+
 Debemos deshabilitar la configuración por defecto de nginx como servidor web para que actúe como balanceador.
 
 Para ello, comentamos la línea 
@@ -80,7 +91,6 @@ Creamos una nueva configuración en `/etc/nginx/conf.d/default.conf`
 
 Para definir la granja web de servidores apache escribimos la sección upstream con la IP de las M1 y M2. Es importante que este al principio del archivo de configuración, fuera de la sección server.
 
-\newpage
 
 ```
 upstream balanceo_ricardoruiz { 
@@ -116,7 +126,9 @@ Luego la configuración completa quedaría como sigue:
 
 ![](Practica3/assets/Figura3.png)
 
-Configuramos la IP de la máquina m3-ricardoruiz como IP estática en el fichero `/etc/netplan/00-installer-config.yaml`:
+### Ejemplo de funcionamiento
+
+Configuramos la IP de la máquina m3-ricardoruiz como IP estática en el fichero `/etc/netplan/00-installer-config.yaml`, añadiendo un nuevo adaptador de red Host-Only.
 
 ```yaml
    network:
@@ -126,7 +138,7 @@ Configuramos la IP de la máquina m3-ricardoruiz como IP estática en el fichero
        ens160:
          dhcp4: true
          addresses:
-           - 192.168.1.20/24
+           - 192.168.1.30/24
          routes:
             - to: 0.0.0.0/0
               via: 192.168.1.1
@@ -136,16 +148,51 @@ Configuramos la IP de la máquina m3-ricardoruiz como IP estática en el fichero
        ens256:
          dhpc4: false
          addresses:
-           - 192.168.1.30/24
+           - 192.168.2.30/24
 ```
 
-TODO: Añadir adaptador de red Host-Only.
+La IP accesible desde fuera a M3 es `172.16.21.133`. 
+
+Podemos comprobar el funcionamiento del balanceador con 
+
+```shell
+ricardoruiz@m3-ricardoruiz $ curl 172.16.21.133/swap.html
+```
+
+![](Practica3/assets/Figura4.png)
+
+### Repartir carga en función de pesos
+
+En caso de saber que alguna de las máquinas finales es más potente, podemos modificar la definición del “upstream” para pasarle más tráfico que al resto. Para ello, asignamos un valor numero al modificador "weight".
+
+Por ejemplo, podemos hacer que cada tres peticiones que lleguen al balanceador, la máquina M2 atenderá dos y la máquina M1 atenderá una:
+
+```conf
+upstream balanceo_ricardoruiz {
+  server 192.168.2.10 weight=1;
+  server 192.168.2.20 weight=2;
+}
+```
+
+Para comprobarlo, modificamos `swap.html` las máquinas finales para identificarlas. 
+
+![swap.html en M1](Practica3/assets/Figura7.png)
+
+![swap.html en M2](Practica3/assets/Figura8.png)
+
+Desactivamos también la tarea cron de sincronización con rsync para evitar que se sobreescriban los cambios.
+
+![Desactivación de la tarea cron](Practica3/assets/Figura6.png)
+
+Realizamos tres peticiones y comprobamos que se sigue el **Algoritmo Round Robin**, acabando dos de ellas en M2:
+
+![](Practica3/assets/Figura5.png)
+
+## Balanceo de carga con HAProxy
 
 
 # Tarea 2. Alta carga con Apache Benchmark
 
 # Tarea 3. Análisis Comparativo
-
-
 
 # Referencias
