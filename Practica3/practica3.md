@@ -213,6 +213,8 @@ En efecto, comprobamos que se balancea el tráfico entre M1 y M2 siguiento el al
 
 ![](Practica3/assets/Figura10.png)
 
+\newpage
+
 ### Tarea Avanzada: repartir carga en función de pesos
 
 Para configurar HAProxy para que distribuya la carga de manera que M1 reciba el doble de peticiones que M2, debemos modificar el fichero de configuración de HAProxy para que quede como sigue:
@@ -223,14 +225,30 @@ frontend http-in
   default_backend balanceo_ricardoruiz
   
 backend balanceo_ricardoruiz
+  balance roundrobin
   server m1 192.168.2.10:80 weight 2 maxconn 32 
   server m2 192.168.2.20:80 weight 1 maxconn 32
 ```
 
 Relanzamos HAProxy como se hizo anteriormente y 
-realizamos tres peticiones, comprobando que se sigue el **Algoritmo Round Robin** acabando dos de ellas en M1:
+realizamos tres peticiones, comprobando que se sigue el **Algoritmo Round Robin** recibiendo M1 el doble que M2:
 
-s
+![Distribución con pesos en HAProxy](Practica3/assets/Figura11.png)
+
+### Tarea Avanzada: Módulo de estadísticas.
+
+Una opción interesante es habilitar el módulo de estadísticas del balanceador. Se puede habilitar añadiendo la configuración en el archivo /etc/haproxy/haproxy.cfg
+
+```
+global
+  stats socket /var/lib/haproxy/stats
+  listen stats
+    bind *:9999
+  mode http
+  stats enable
+  stats uri /stats
+  stats realm HAProxy\ Statistics stats auth ricardoruiz:ricardoruiz
+````
 
 # Tarea 2. Alta carga con Apache Benchmark
 
