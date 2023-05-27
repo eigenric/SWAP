@@ -237,18 +237,22 @@ realizamos tres peticiones, comprobando que se sigue el **Algoritmo Round Robin*
 
 ### Tarea Avanzada: Módulo de estadísticas.
 
-Una opción interesante es habilitar el módulo de estadísticas del balanceador. Se puede habilitar añadiendo la configuración en el archivo /etc/haproxy/haproxy.cfg
+Una opción interesante es habilitar el módulo de estadísticas del balanceador. Se puede habilitar añadiendo la configuración en el archivo `/etc/haproxy/haproxy.cf`
 
-```
+```conf
 global
-  stats socket /var/lib/haproxy/stats
-  listen stats
+    stats socket /var/lib/haproxy/stats
+
+listen stats
     bind *:9999
-  mode http
-  stats enable
-  stats uri /stats
-  stats realm HAProxy\ Statistics stats auth ricardoruiz:ricardoruiz
-````
+    mode http
+    stats enable
+    stats uri /stats
+    stats realm HAProxy Statistics
+    stats auth ricardoruiz:ricardoruiz
+```
+
+![](Practica3/assets/Figura12.png)
 
 # Tarea 2. Alta carga con Apache Benchmark
 
