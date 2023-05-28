@@ -254,6 +254,10 @@ listen stats
 
 ![](Practica3/assets/Figura12.png)
 
+Y accedemos a la página de estadísticas:
+
+![](Practica3/assets/Figura13.png)
+
 # Tarea 2. Alta carga con Apache Benchmark
 
 # Tarea 3. Análisis Comparativo
