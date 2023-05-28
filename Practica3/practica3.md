@@ -254,11 +254,17 @@ listen stats
 
 ![](Practica3/assets/Figura12.png)
 
-Y accedemos a la página de estadísticas:
+Y tras ingresar el usuario y contraseña ricardoruiz / ricardoruiz, accedemos a la página de estadísticas:
 
 ![](Practica3/assets/Figura13.png)
 
+
 # Tarea 2. Alta carga con Apache Benchmark
+
+Someter la granja web a una alta carga con la herramienta Apache Benchmark a través de M3, considerando 2 opciones:
+a) nginx con round-robin
+b) haproxy con round-robin
+
 
 # Tarea 3. Análisis Comparativo
 
