@@ -294,7 +294,7 @@ De hecho, ejecutando el comando `top` en las máquinas virtuales M1 y M2, podemo
 Podemos también comprobar que se balancea la carga entre M1 y M2 con el archivo `getload.php` proporcionado en prado:
 
 ```shell
-ricardoruiz@m3-ricardoruiz $ ab -n 10000 -c 10 http://172.16.21.133/getload.php
+eigenric@macbook % ab -n 10000 -c 10 http://172.16.21.133/getload.php
 ```
 
 Y comprobamos mediante la carga de CPU que M1 (IP 172.16.21.132) recibe el doble de peticiones que M2 (172.16.21.130):
@@ -313,7 +313,7 @@ ricardoruiz@m3-ricardoruiz $ sudo systemctl start nginx
 Y realizamos el benchmark con la siguiente orden:
 
 ```shell
-ricardoruiz@m3-ricardoruiz $ ab -n 10000 -c 10 http://172.16.21.133/swap.html
+eigenric@macbook % ab -n 10000 -c 10 http://172.16.21.133/swap.html
 ```
 
 obteniendo los siguientes resultados:
@@ -326,15 +326,49 @@ Gobetween es un balanceador de carga y proxy inverso de alta disponibilidad escr
 
 ### Instalación de Gobetween
 
-Compilamos de repositorio fuente:
+Compilamos desde el repositorio fuente:
 
 ```shell
 $ git clone git@github.com:yyyar/gobetween.git
-$ make
-$ make run
-
+$ sudo make install
 ```
 
+### Configuración de Gobetween
+
+La configuración de Gobetween se encuentra en el fichero `/etc/gobetween.toml`.  Debemos modificarlo para indicarle cuales son nuestros servidores (backend) y qué peticiones balancear.
+
+La siguiente configuración hace que Gobetween escuche en el puerto 80 y redirige el tráfico a las máquinas M1 y M2.
+
+```toml
+[servers.sample]
+bind = "172.16.21.133:80"
+protocol = "tcp"
+balance = "weight"
+
+max_connections = 10000
+client_idle_timeout = "10m"
+backend_idle_timeout = "10m"
+backend_connection_timeout = "2s"
+
+[servers.sample.discovery]
+kind = "static"
+static_list = [
+    "192.168.2.10:80 weight=2",
+    "192.168.2.20:80 weight=1"
+]
+```
+
+Y realizaríamos el benchmark con la siguiente orden:
+
+```shell
+eigenric@macbook % ab -n 10000 -c 10 172.16.21.133/swap.html
+```
+
+Obteniendo los siguientes resultados:
+
+![Resultado Apache Benchmark para gobetween](Practica3/assets/Figura19.png)
+
+\newpage
 
 # Tarea 3. Análisis Comparativo
 
@@ -344,16 +378,19 @@ En esta tarea, realizaremos un análisis comparativo de los resultados obtenidos
 |----------|------------------------|
 | NGINX    | 591.66                 |
 | HAProxy  | 363.61                 |
+| Gobetween| 294.93                 |
+
 
 El resultado de Apache Benchmark revela diferencias significativas en el rendimiento entre NGINX y HAProxy en términos de peticiones por segundo. Según los resultados obtenidos, NGINX alcanza un promedio de 591.66 peticiones por segundo, mientras que HAProxy logra un promedio de 363.61 peticiones por segundo.
 
-\newpage
 
 Esto indica que NGINX muestra un rendimiento superior en comparación con HAProxy en términos de capacidad para manejar un mayor número de peticiones por unidad de tiempo. La diferencia de aproximadamente 228 peticiones por segundo entre ambas soluciones destaca la eficiencia y escalabilidad de NGINX en la gestión de la carga de trabajo.
 
-Si se requiere un alto rendimiento y una mayor capacidad de procesamiento de peticiones, NGINX se presenta como una opción más sólida en comparación con HAProxy. Sin embargo, es importante tener en cuenta que los resultados pueden variar en función de los escenarios y configuraciones específicas de implementación.
+En cuanto a Gobetween, se observa que alcanza un promedio de 294.93 peticiones por segundo, lo cual se encuentra por debajo de los valores obtenidos tanto por NGINX como por HAProxy. Esto indica que Gobetween puede tener un rendimiento inferior en comparación con estas soluciones en términos de capacidad para manejar un alto volumen de peticiones.
 
-En resumen, NGINX supera a HAProxy en términos de rendimiento y capacidad de manejo de peticiones, lo que lo convierte en una elección preferida en entornos que requieren una alta carga y distribución eficiente del tráfico.
+En resumen, **NGINX supera a HAProxy y Gobetween** en términos de rendimiento y capacidad de manejo de peticiones, lo que lo convierte en una elección preferida en entornos que requieren una alta carga y distribución eficiente del tráfico.
+
+\newpage
 
 # Referencias
 
@@ -362,3 +399,4 @@ En resumen, NGINX supera a HAProxy en términos de rendimiento y capacidad de ma
 - **HAProxy Documentation** [https://cbonte.github.io/haproxy-dconv/](https://cbonte.github.io/haproxy-dconv/)
 - **NGINX** [https://nginx.org/](https://nginx.org/)
 - **NGINX como balanceador de carga** [https://www.nginx.com/resources/glossary/load-balancing/](https://www.nginx.com/resources/glossary/load-balancing/)
+- **Gobetween - Documentación oficial** [https://github.com/yyyar/gobetween](https://github.com/yyyar/gobetween)
