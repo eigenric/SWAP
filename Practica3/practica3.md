@@ -141,12 +141,12 @@ Podemos comprobar el funcionamiento del balanceador con
 
 En caso de saber que alguna de las máquinas finales es más potente, podemos modificar la definición del “upstream” para pasarle más tráfico que al resto. Para ello, asignamos un valor numero al modificador "weight".
 
-Por ejemplo, podemos hacer que cada tres peticiones que lleguen al balanceador, la máquina M2 atenderá dos y la máquina M1 atenderá una:
+Realizamos la tarea avanzada haciendo que cada tres peticiones que lleguen al balanceador, la máquina M1 reciba dos y la M2 una. Para ello, modificamos el fichero de configuración de nginx como sigue:
 
 ```conf
 upstream balanceo_ricardoruiz {
-  server 192.168.2.10 weight=1;
-  server 192.168.2.20 weight=2;
+  server 192.168.2.10 weight=2;
+  server 192.168.2.20 weight=1;
 }
 ```
 
@@ -261,11 +261,104 @@ Y tras ingresar el usuario y contraseña ricardoruiz / ricardoruiz, accedemos a 
 
 # Tarea 2. Alta carga con Apache Benchmark
 
-Someter la granja web a una alta carga con la herramienta Apache Benchmark a través de M3, considerando 2 opciones:
-a) nginx con round-robin
-b) haproxy con round-robin
+Para medir el rendimiento de un servidor necesitaremos una herramienta que ejecutar en los clientes para crear una carga HTTP específica.
+
+Dado que el numero de usuarios puede ser alto lo recomendable es usar programas de línea de comandos que sobrecarguen lo mínimo posible las máquinas que estamos usando. 
+
+En esta tarea, usaremos la herramienta Apache Benchmark para someter a la granja web a una alta carga en dos escenarios: nginx con round-robin y haproxy con round-robin.
+
+Es conveniente ejecutar los benchmark en otra máquina distinta a las involucradas en la granja web (servidores web o balanceador), para que el consumo de recursos no afecte al rendimiento
+
+## HAProxy con Round Robin
+
+Realizamos el benchmark con la siguiente orden:
+
+```shell
+ab -n 10000 -c 10 http://172.16.21.133/swap.html
+```
+
+La opción `-n` indica el número de peticiones y `-c` el número de peticiones concurrentes.
+
+Obtenemos los siguientes resultados:
+
+![Resultado Apache Benchmark](Practica3/assets/Figura14.png)
+
+De hecho, ejecutando el comando `top` en las máquinas virtuales M1 y M2, podemos comprobar que se están recibiendo peticiones de forma alternada:
+
+![Comando top en M1](Practica3/assets/Figura15.png)
+
+![Comando top en M2](Practica3/assets/Figura16.png)
+
+\newpage
+
+Podemos también comprobar que se balancea la carga entre M1 y M2 con el archivo `getload.php` proporcionado en prado:
+
+```shell
+ricardoruiz@m3-ricardoruiz $ ab -n 10000 -c 10 http://172.16.21.133/getload.php
+```
+
+Y comprobamos mediante la carga de CPU que M1 (IP 172.16.21.132) recibe el doble de peticiones que M2 (172.16.21.130):
+
+![getload.php mientras se ejecuta ab](Practica3/assets/Figura17.png)
+
+## NGINX con Round Robin
+
+Desactivamos el servicio de HAProxy y activamos el de NGINX:
+
+```shell
+ricardoruiz@m3-ricardoruiz $ sudo systemctl stop haproxy
+ricardoruiz@m3-ricardoruiz $ sudo systemctl start nginx
+```
+
+Y realizamos el benchmark con la siguiente orden:
+
+```shell
+ricardoruiz@m3-ricardoruiz $ ab -n 10000 -c 10 http://172.16.21.133/swap.html
+```
+
+obteniendo los siguientes resultados:
+
+![Resultado Apache Benchmark](Practica3/assets/Figura18.png)
+
+## Tarea Avanzada: Balanceador de carga con Gobetween
+
+Gobetween es un balanceador de carga y proxy inverso de alta disponibilidad escrito en Go. Es una alternativa ligera a HAProxy y NGINX.
+
+### Instalación de Gobetween
+
+Compilamos de repositorio fuente:
+
+```shell
+$ git clone git@github.com:yyyar/gobetween.git
+$ make
+$ make run
+
+```
 
 
 # Tarea 3. Análisis Comparativo
 
+En esta tarea, realizaremos un análisis comparativo de los resultados obtenidos en la tarea anterior, considerando el número de peticiones por unidad de tiempo.
+
+|          | Peticiones por segundo |
+|----------|------------------------|
+| NGINX    | 591.66                 |
+| HAProxy  | 363.61                 |
+
+El resultado de Apache Benchmark revela diferencias significativas en el rendimiento entre NGINX y HAProxy en términos de peticiones por segundo. Según los resultados obtenidos, NGINX alcanza un promedio de 591.66 peticiones por segundo, mientras que HAProxy logra un promedio de 363.61 peticiones por segundo.
+
+\newpage
+
+Esto indica que NGINX muestra un rendimiento superior en comparación con HAProxy en términos de capacidad para manejar un mayor número de peticiones por unidad de tiempo. La diferencia de aproximadamente 228 peticiones por segundo entre ambas soluciones destaca la eficiencia y escalabilidad de NGINX en la gestión de la carga de trabajo.
+
+Si se requiere un alto rendimiento y una mayor capacidad de procesamiento de peticiones, NGINX se presenta como una opción más sólida en comparación con HAProxy. Sin embargo, es importante tener en cuenta que los resultados pueden variar en función de los escenarios y configuraciones específicas de implementación.
+
+En resumen, NGINX supera a HAProxy en términos de rendimiento y capacidad de manejo de peticiones, lo que lo convierte en una elección preferida en entornos que requieren una alta carga y distribución eficiente del tráfico.
+
 # Referencias
+
+-  **Apache Benchmark** [http://httpd.apache.org/docs/2.2/programs/ab.html](http://httpd.apache.org/docs/2.2/programs/ab.html)
+- **HAProxy** [https://www.haproxy.org/](https://www.haproxy.org/)
+- **HAProxy Documentation** [https://cbonte.github.io/haproxy-dconv/](https://cbonte.github.io/haproxy-dconv/)
+- **NGINX** [https://nginx.org/](https://nginx.org/)
+- **NGINX como balanceador de carga** [https://www.nginx.com/resources/glossary/load-balancing/](https://www.nginx.com/resources/glossary/load-balancing/)

@@ -197,8 +197,8 @@ Esperamos a las 12:00 y comprobamos que se ha sincronizado en M1:
 
 Aquí tienes la lista de referencias en el formato solicitado:
 
-- **OpenSSH.** Recuperado de [https://www.openssh.com/](https://www.openssh.com/)
-- **SCP (Secure Copy).**  Recuperado de [https://man.openbsd.org/scp](https://man.openbsd.org/scp)
-- **Rsync**. Recuperado de [https://rsync.samba.org/](https://rsync.samba.org/)
-- **SSH Keygen**. Recuperado de [https://man.openbsd.org/ssh-keygen](https://man.openbsd.org/ssh-keygen)
-- **Cron.** Recuperado de [https://man7.org/linux/man-pages/man8/cron.8.html](https://man7.org/linux/man-pages/man8/cron.8.html)
+- **OpenSSH.** [https://www.openssh.com/](https://www.openssh.com/)
+- **SCP (Secure Copy).**  [https://man.openbsd.org/scp](https://man.openbsd.org/scp)
+- **Rsync**. [https://rsync.samba.org/](https://rsync.samba.org/)
+- **SSH Keygen**. [https://man.openbsd.org/ssh-keygen](https://man.openbsd.org/ssh-keygen)
+- **Cron.** [https://man7.org/linux/man-pages/man8/cron.8.html](https://man7.org/linux/man-pages/man8/cron.8.html)
