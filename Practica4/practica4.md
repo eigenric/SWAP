@@ -22,7 +22,7 @@ Un certificado SSL garantiza la seguridad de un sitio web y transmite confianza 
 La versión actual, SSLv3, se considera insegura, y el nuevo estándar es TLS (Transport Layer Security). Hay diferentes formas de obtener un certificado SSL e instalarlo en un servidor web para utilizar el protocolo HTTPS:
 
 - Autoridad de certificación
-- **Certificados auto-firmados**
+- Certificados auto-firmados
 - Certbot (antes Let's Encrypt)
 
 # Tareas
@@ -38,6 +38,8 @@ que acepten tráfico HTTP y HTTPS.
 
 4. Configurar y documentar las reglas del cortafuegos con IPTABLES a través de un script en cada máquina con las reglas creadas.
 
+\newpage
+
 ## Tareas avanzadas.
 
 1. Permitir SSH, PING y DNS a las máquinas M1, M2 y M3 así como el tráfico consigo misma (localhost). El resto de servicios y/o peticiones debe denegarse.
@@ -48,12 +50,116 @@ que acepten tráfico HTTP y HTTPS.
 
 4. Adicional: Crear, instalar y configurar un certificado SSL con Cerbot u otro
 
-\newpage
 
-# Tarea 1. Certificado SSL 
+# Tarea 1. Certificado SSL en M1.
 
 En la siguiente tarea, generaremos e instalaremos un certificado autofirmado:
 
-Para generar un certificado SSL autofirmado en Ubuntu Server solo debemos activar el módulo SSL de Apache, generar los certificados e indicarle la ruta a los certificados en la configuración. Así pues, como root ejecutaremos en la máquina M1:
+Para generar un certificado SSL autofirmado en Ubuntu Server solo debemos
+activar el módulo SSL de Apache, generar los certificados e indicarle la ruta a
+los certificados en la configuración. Así pues, como root ejecutaremos en la
+máquina M1:
+
+```bash
+ricardoruiz@m1-ricardoruiz $ su
+root@m1-ricardoruiz:~# a2enmod ssl
+root@m1-ricardoruiz:~# sudo service apache2 restart
+root@m1-ricardoruiz:~# mkdir /etc/apache2/ssl
+root@m1-ricardoruiz:~# openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout /etc/apache2/ssl/apache.key -out /etc/apache2/ssl/apache.crt
+```
+
+E ingresamos la siguiente información personal en el certificado:
+
+![](Practica4/assets/Figura1.png)
+
+Modificamos la ruta de los certificados en la configuración de Apache:
+
+```bash
+ricardoruiz@m1-ricardoruiz $ sudo mv /etc/apache2/ssl/apache.crt /etc/apache2/ssl/swap_ricardoruiz.ssl
+ricardoruiz@m1-ricardoruiz $ sudo mv /etc/apache2/ssl/apache.key /etc/apache2/ssl/swap_ricardoruiz.key
+```
+
+Y editamos el archivo de configuración del sitio default-ssl: nano
+`/etc/apache2/sites-available/default-ssl.conf`
+
+Agregamos la ruta de los certificados debajo del parámetro SSLEngine on:
+
+```conf
+[...]
+SSLEngine on
+SSLCertificateFile /etc/apache2/ssl/swap_ricardoruiz.crt
+SSLCertificateKeyFile /etc/apache2/ssl/swap_ricardoruiz.key
+```
+
+![Certificado SSL](Practica4/assets/Figura2.png)
+
+Activamos el sitio **default-ssl** y reiniciamos apache:
+
+```bash
+ricardoruiz@m1-ricardoruiz $ sudo a2ensite default-ssl 
+ricardoruiz@m1-ricardoruiz $ sudo service apache2 reload
+```
+
+Podemos acceder ahora al servidor web mediante el protocolo HTTPS y veremos que
+en la barra de dirección sale en rojo el https, ya que se trata de un
+certificado autofirmado.
+
+![Certificado SSL](Practica4/assets/Figura3.png)
+
+Igualmente podemos realizar las peticiones con curl
+
+```bash
+ricardoruiz@m1-ricardoruiz $ curl -k https://172.16.21.132/swap.html
+```
+
+# Tarea 2. Certificado SSL en M2 y M3.
+
+Queremos que la granja nos permita usar el HTTPS por lo que configuraremos el 
+balanceador para que también lo acepté. Copiaremos la pareja de archivo (.ssl, .key)
+a todas las máquinas
+
+Usaremos scp:
+
+```bash
+ricardoruiz@m1-ricardoruiz $ sudo cd /etc/apache2/ssl
+ricardoruiz@m1-ricardoruiz $ sudo scp swap_ricardoruiz.crt ricardoruiz@192.168.2.20:/home/ricardoruiz
+ricardoruiz@m1-ricardoruiz $ sudo scp swap_ricardoruiz.key ricardoruiz@192.168.2.20:/home/ricardoruiz
+```
+
+Y desde M2, activamos el módulo SSL:
+
+```bash
+ricardoruiz@m2-ricardoruiz $ sudo mkdir /etc/apache2/ssl
+ricardoruiz@m2-ricardoruiz $ sudo mv swap_ricardoruiz.crt /etc/apache2/ssl
+ricardoruiz@m2-ricardoruiz $ sudo mv swap_ricardoruiz.key /etc/apache2/sslede
+ricardoruiz@m2-ricardoruiz $ sudo a2enmod ssl & sudo service apache2 restart
+ricardoruiz@m2-ricardoruiz $ sudo nano /etc/apache2/sites-available/default-ssl.conf 
+```
+
+Realizamos la misma copia de la pareja de archivo en el balanceador (M3)
+pero añadiendo esta vez al servidor nginx configurado en la práctica
+anerior los siguiente: `/etc/nginx/conf.d/default.conf`:
+
+```
+listen 443 ssl;
+ssl on;
+ssl_certificate /home/ricardoruiz/ssl/swap_ricardoruiz.crt; 
+ssl_certificate_key /home/ricardoruiz/ssl/swap_ricardoruiz.key;
+```
+
+![Certificado SSL](Practica4/assets/Figura4.png)
+
+Usando ufw activaremos el tráfico HTTPS en el balanceador:
+
+```bash
+ricardoruiz@m3-ricardoruiz $ sudo ufw allow "NGINX HTTPS"
+```
+
+Ahora ya podremos hacerle peticiones por HTTPS a la IP del balanceador, 
+obteniendo como antes resultado en rojo en la barra de dirección:
+
+![Certificado SSL en Balanceador](Practica4/assets/Figura5.png)
+
+
 
 # Referencias

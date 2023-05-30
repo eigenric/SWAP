@@ -254,7 +254,13 @@ listen stats
 
 ![](Practica3/assets/Figura12.png)
 
-Y tras ingresar el usuario y contraseña ricardoruiz / ricardoruiz, accedemos a la página de estadísticas:
+Es necesario abrir el puerto 9999:
+
+```shell
+ricardoruiz@m3-ricardoruiz $ sudo iptables -A INPUT -p tcp --dport 9999 -j ACCEPT
+```
+
+Y accedemos a la página de estadísticas ingresando como usuario y contraseña ricardoruiz:ricardooruiz
 
 ![](Practica3/assets/Figura13.png)
 

@@ -126,7 +126,7 @@ De forma parecida como se hicimos en la configuración avanzada de la primer pr�
 ricardoruiz@m2-ricardoruiz $ ssh-keygen -b 4096 -t rsa
 ```
 
-Esto generará, por defecto, el fichero `~/.ssh/id_rsa` para la clave privada y el ficher `~/.ssh/id_rsa.pub` para la clave pública. 
+Esto generará, por defecto, el fichero `~/.ssh/id_rsa` para la clave privada y el fichero `~/.ssh/id_rsa.pub` para la clave pública. 
 
 Este formato es válido para el protocolo 2 de SSH. Debemos copiar la clave pública al equipo remoto (máquina principal) en `~/.ssh/authorized_key` con permisos 60-s0.
 
