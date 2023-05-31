@@ -160,6 +160,88 @@ obteniendo como antes resultado en rojo en la barra de dirección:
 
 ![Certificado SSL en Balanceador](Practica4/assets/Figura5.png)
 
+# Tarea 3. Denegar todo el tráfico entrante a las máquinas M1, M2 y M3 a excepción de tráfico HTTP y HTTPS.
 
+Un cortafuegos es un componente esencial que protege una granja web de accesos
+indebidos. Actúa como un guardián de la puerta al sistema web, permitiendo el
+tráfico autorizado y denegando el resto. En Linux, una herramienta comúnmente
+utilizada para configurar un cortafuegos es iptables.
+
+iptables es una herramienta de cortafuegos en el espacio de usuario que permite
+al superusuario definir reglas de filtrado de paquetes, traducción de
+direcciones de red y mantener registros de log. Está construida sobre Netfilter,
+una parte del núcleo Linux que permite interceptar y manipular paquetes de red.
+
+Queremos que el tráfico HTTP y HTTPS sea el único que pueda acceder a las
+máquinas M1, M2 y M3. Para ello, crearemos un script que configure el
+cortafuegos con iptables. El script se ejecutará al arrancar el sistema y
+configurará el cortafuegos con las reglas que definamos.
+
+\newpage
+
+```bash
+# (1) se eliminan todas las reglas que hubiera 
+# para hacer la configuración limpia: 
+iptables -F
+iptables -X
+# (2) establecer las políticas por defecto (denegar todo el tráfico): 
+iptables -P INPUT DROP
+iptables -P OUTPUT DROP
+iptables -P FORWARD DROP
+# (3) permitir cualquier acceso desde localhost (interface lo): 
+iptables -A INPUT -i lo -j ACCEPT
+iptables -A OUTPUT -o lo -j ACCEPT
+# (4) únicamente se permitirá el tráfico HTTP (puerto 80) y HTTPS (puerto 443)
+iptables -A INPUT -m state --state NEW -p tcp --dport 80 -j ACCEPT 
+iptables -A INPUT -m state --state NEW -p tcp --dport 443 -j ACCEPT
+
+```
+
+Escribimos el siguiente script en `/etc/init.d/iptables.sh` y le damos
+permisos de ejecución
+    
+```bash
+ricardoruiz@m1-ricardoruiz $ sudo chmod +x /etc/init.d/iptables.sh
+```
+
+Y creamos un servicio para que se ejecute al arrancar el sistema:
+
+```
+sudo nano /etc/systemd/system/iptables-config.service
+
+[Unit]
+Description=Tráfico permito - HTTP y HTTPS
+After=network.target
+
+[Service]
+ExecStart=/etc/init.d/iptables-config.sh
+User=root
+
+[Install]
+WantedBy=multi-user.target
+```
+
+Establecemos los permisos adecuados y activamos el servicio:
+
+```bash
+ricardoruiz@m2-ricardoruiz $ sudo chmod 644 /etc/systemd/system/iptables-config.service
+ricardoruiz@m1-ricardoruiz $ sudo systemctl daemon-reload
+ricardoruiz@m1-ricardoruiz $ sudo systemctl enable iptables-config
+```
+
+Reiniciamos la máquina virtual y comprobamos que el servicio se ha ejecutado
+correctamente:
+
+![](assets/Figura6.png)
+
+Para comprobar el funcionamiento del cortafuegos recién configurado usaremos
+la orden netstat para ver los puertos abiertos en la máquina:
+
+Por ejemplo, para asegurarnos del estado (abierto/cerrado) del puerto 80, podemos ejecutar:
+
+```
+netstat -tulpn | grep :80
+netstat -tulpn | grep :443
+```
 
 # Referencias
