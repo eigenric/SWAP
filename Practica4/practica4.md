@@ -194,14 +194,15 @@ iptables -A OUTPUT -o lo -j ACCEPT
 # (4) únicamente se permitirá el tráfico HTTP (puerto 80) y HTTPS (puerto 443)
 iptables -A INPUT -m state --state NEW -p tcp --dport 80 -j ACCEPT 
 iptables -A INPUT -m state --state NEW -p tcp --dport 443 -j ACCEPT
-
+iptables -A INPUT -m state --state ESTABLISHED,RELATED -p tcp --dport 80 -j ACCEPT
+iptables -A INPUT -m state --state NEW,ESTABLISHED,RELATED -p tcp --dport 443 -j ACCEPT
 ```
 
 Escribimos el siguiente script en `/etc/init.d/iptables.sh` y le damos
 permisos de ejecución
     
 ```bash
-ricardoruiz@m1-ricardoruiz $ sudo chmod +x /etc/init.d/iptables.sh
+ricardoruiz@m3-ricardoruiz $ sudo chmod +x /etc/init.d/iptables.sh
 ```
 
 Y creamos un servicio para que se ejecute al arrancar el sistema:
@@ -224,18 +225,19 @@ WantedBy=multi-user.target
 Establecemos los permisos adecuados y activamos el servicio:
 
 ```bash
-ricardoruiz@m2-ricardoruiz $ sudo chmod 644 /etc/systemd/system/iptables-config.service
-ricardoruiz@m1-ricardoruiz $ sudo systemctl daemon-reload
-ricardoruiz@m1-ricardoruiz $ sudo systemctl enable iptables-config
+ricardoruiz@m3-ricardoruiz $ sudo chmod 644 /etc/systemd/system/iptables-config.service
+ricardoruiz@m3-ricardoruiz $ sudo systemctl daemon-reload
+ricardoruiz@m3-ricardoruiz $ sudo systemctl enable iptables-config
 ```
 
-Reiniciamos la máquina virtual y comprobamos que el servicio se ha ejecutado
-correctamente:
+Reiniciamos la máquina virtual y comprobamos que el servicio se ha ejecutado correctamente:
 
 ![](assets/Figura6.png)
 
 Para comprobar el funcionamiento del cortafuegos recién configurado usaremos
 la orden netstat para ver los puertos abiertos en la máquina:
+
+\newpage
 
 Por ejemplo, para asegurarnos del estado (abierto/cerrado) del puerto 80, podemos ejecutar:
 
@@ -244,4 +246,17 @@ netstat -tulpn | grep :80
 netstat -tulpn | grep :443
 ```
 
+En efecto, comprobamos que podemos acceder mediante http y https al servidor pero no por ssh
+
+![](assets/Figura7.png)
+
+Y repitiendo el mismo proceso con las maquina M1 y M2 obtendriamos el resultado querido.
+
 # Referencias
+ 
+- **Documentación de Iptables**: [https://netfilter.org/documentation/index.html](https://netfilter.org/documentation/index.html)
+
+- **Configuración de iptables para permitir conexiones HTTPS:** [https://www.cyberciti.biz/faq/linux-web-server-firewall-tutorial/](https://www.cyberciti.biz/faq/linux-web-server-firewall-tutorial/)
+
+- **Guía básica de firewall en Linux:** [https://www.tecmint.com/how-to-setup-linux-firewall-for-a-secured-web-server/](https://www.tecmint.com/how-to-setup-linux-firewall-for-a-secured-web-server/)
+
