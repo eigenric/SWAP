@@ -1,7 +1,7 @@
 ---
 title: "Servidores Web de Altas Prestaciones. Práctica 6"
 author: ["Ricardo Ruiz Fernández de Alba"]
-date: "24/06/2023"
+date: "27/06/2023"
 subject: "Servidores Web de Altas Prestaciones"
 keywords: ["MySQL", "Replicación"]
 subtitle: "Servidor de disco NFS"
@@ -65,7 +65,7 @@ ricardoruiz@nfs-ricardoruiz $ sudo service nfs-kernel-server status
 En los clientes (M1 y M2) debemos instalar los paquetes necesarios y crear el punto de montaje (el directorio "datos" en cada máquina cliente):
 
 ```shell
-ricardoruiz@m1-ricardoruiz $  sudo apt-get install nfs-common rpcbind 
+ricardoruiz@m1-ricardoruiz $ sudo apt-get install nfs-common rpcbind 
 ricardoruiz@m1-ricardoruiz $ cd /home/usuario
 ricardoruiz@m1-ricardoruiz $ mkdir datos
 ricardoruiz@m1-ricardoruiz $ chmod -R 777 datos
@@ -74,15 +74,16 @@ ricardoruiz@m1-ricardoruiz $ chmod -R 777 datos
 Ahora ya podemos montar la carpeta remota (la exportada en el servidor NFS) sobre el directorio recién creado:
 
 ```shell
-ricardoruiz@m1-ricardoruiz sudo mount 192.168.2.40:/datos/compartido datos
+ricardoruiz@m1-ricardoruiz $ sudo mount 192.168.2.40:/datos/compartido datos
 ```
 
 En este punto podemos comprobar que se pueden leer y escribir los archivos que haya almacenados en la carpeta compartida:
 
 ```shell
-ls –la datos
-touch datos/archivo.txt
+ricardoruiz@m1-ricardoruiz $ ls datos
+ricardoruiz@m1-ricardoruiz $ touch datos/archivo1.txt
 ```
+
 
 ## Tarea 3. Comprobar que todas las máquinas pueden acceder a los archivos almacenados en la carpeta compartida.
 
@@ -96,10 +97,6 @@ Y se compruebamos como desde las tres máquinas podemos acceder a todos los arch
 
 Para hacer la configuración permanente, debemos añadir una línea al archivo `/etc/fstab` para que la carpeta compartida se monte al arrancar el sistema:
 
-```
-IP_NFS:/datos/compartido /home/usuario/datos/ nfs auto,noatime,nolock,bg,nfsvers=3,intr,tcp,actimeo=1800 0 0,
-```
-
 ![Configuración permanente en M1](Practica6/assets/Figura7.png)
 
 ![Configuración permanente en M2](Practica6/assets/Figura8.png)
@@ -107,13 +104,15 @@ IP_NFS:/datos/compartido /home/usuario/datos/ nfs auto,noatime,nolock,bg,nfsvers
 
 Tras reiniciar el sistema, la carpeta se monta de forma automática.
 
+\newpage
 
 # Referencias
 
-**Ayuda de la Comunidad de Ubuntu: Guía de Configuración de NFS**:  [https://help.ubuntu.com/community/SettingUpNFSHowTo](https://help.ubuntu.com/community/SettingUpNFSHowTo)
+**Ayuda de la Comunidad de Ubuntu: Guía de Configuración de NFS**: 
+[https://help.ubuntu.com/community/SettingUpNFSHowTo](https://help.ubuntu.com/community/SettingUpNFSHowTo)
 
 **Guía del Servidor Ubuntu: Sistema de Archivos en Red (Network File System, NFS)**: [https://help.ubuntu.com/lts/serverguide/network-file-system.html.en](https://help.ubuntu.com/lts/serverguide/network-file-system.html.en)
 
-**DigitalOcean: Cómo Configurar un Montaje NFS en Ubuntu 16.04** [https://www.digitalocean.com/community/tutorials/how-to-set-up-an-nfs-mount-on-ubuntu-16-04](https://www.digitalocean.com/community/tutorials/how-to-set-up-an-nfs-mount-on-ubuntu-16-04)
+**DigitalOcean: Cómo Configurar un Montaje NFS en Ubuntu 16.04**: [https://www.digitalocean.com/community/tutorials/how-to-set-up-an-nfs-mount-on-ubuntu-16-04](https://www.digitalocean.com/community/tutorials/how-to-set-up-an-nfs-mount-on-ubuntu-16-04)
 
-**Website for Students: Configurar Montajes NFS en Servidores Ubuntu 16.04 LTS**:  [https://websiteforstudents.com/setup-nfs-mounts-on-ubuntu-16-04-lts-servers-for-client-computers-to-access/](https://websiteforstudents.com/setup-nfs-mounts-on-ubuntu-16-04-lts-servers-for-client-computers-to-access/)
+**Website for Students: Configurar Montajes NFS en Servidores Ubuntu 16.04 LTS**: [https://websiteforstudents.com/setup-nfs-mounts-on-ubuntu-16-04-lts-servers-for-client-computers-to-access/](https://websiteforstudents.com/setup-nfs-mounts-on-ubuntu-16-04-lts-servers-for-client-computers-to-access/)

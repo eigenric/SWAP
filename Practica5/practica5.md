@@ -124,3 +124,16 @@ Y comprobamos que funciona añadiendo datos al maestro y viendo como se actualiz
 ![Nuevos datos maestro](Practica5/assets/Figura12.png)
 
 ![Actualizacion esclavo](Practica5/assets/Figura13.png)
+
+
+\newpage
+
+# Referencias
+
+**Configurar Servidor MySQL en Ubuntu**: [https://support.rackspace.com/how-toconfiguring-mysql-server-on-ubuntu/](https://support.rackspace.com/how-to set-up-mysql-master-slave-replication/)
+
+**Configurar MySQL por defecto**: [https://dev.mysql.com/doc/refman/5.7/en/server-configuration-defaults.html](https://dev.mysql.com/doc/refman/5.7/en/server-configuration-defaults.html)
+
+**Configurar MySQL como esclavo**: [https://dev.mysql.com/doc/refman/5.7/en/replication-howto.html](https://dev.mysql.com/doc/refman/5.7/en/replication-howto.html)
+
+
