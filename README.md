@@ -6,6 +6,8 @@ Repositorio de prácticas de la asignatura de Servidores Web de Altas Prestacion
 - [Práctica 2 - Clonar la información de un Sitio Web.](./Practica2/practica2.pdf)
 - [Práctica 3 - Balanceo de carga en un sitio web.](./Practica3/practica3.pdf)
 - [Práctica 4 - Asegurar la granja web.](./Practica4/practica4.pdf)
+- [Práctica 5 - Replicación de bases de datos MySQL](./Practica5/practica5.pdf)
+- [Práctica 6 - Servidor de discos NFS](./Practica6/practica6.pdf)
 
 ## Compilación
 
